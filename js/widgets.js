@@ -295,11 +295,14 @@ var istexConfigDefault = {
   // le nom de l'évènement émit au moment d'une recherche    
   resultsEventName: "istex-results",
 
-  // la taille en nombre de caractères du résumé
+  // la taille max en nombre de caractères du résumé
   abstractLength: 250,
 
+  // la taille max en nombre de caractères du titre
+  titleLength: 100,
+
   // quel est le format clickable au niveau du titre
-  fullTextOnTitle: 'pdf',
+  fullTextOnTitle: 'pdf'
 };
 
 // create a empty istexConfig variable
@@ -571,7 +574,12 @@ if (!istexConfig) {
 
       void 0;
       itemElt.find('.istex-results-item-title').text(item.title);
-      itemElt.find('.istex-results-item-abstract').text(item.abstract);
+      if (item.abstract) {
+        itemElt.find('.istex-results-item-abstract').text(item.abstract);  
+      } else {
+        itemElt.find('.istex-results-item-abstract').text('…');
+        itemElt.find('.istex-results-item-abstract').attr('title', 'Pas de résumé');
+      }
       itemElt.find('.istex-results-item-corpus').text(item.corpusName);
 
       itemElt.find('.istex-results-item-download').empty();
@@ -608,6 +616,15 @@ if (!istexConfig) {
         abs = abs.substring(0, self.settings.abstractLength);
         abs += "…";
         itemElt.find('.istex-results-item-abstract').text(abs);
+      }
+
+      // truncate title text
+      var title = itemElt.find('.istex-results-item-title').text();
+      if (title.length > self.settings.titleLength) {
+        title = title.substring(0, self.settings.titleLength);
+        title += "…";
+        itemElt.find('.istex-results-item-title').attr('title', itemElt.find('.istex-results-item-title').text());
+        itemElt.find('.istex-results-item-title').text(title);
       }
 
       items.append(itemElt);
