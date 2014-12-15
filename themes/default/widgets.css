@@ -110,16 +110,27 @@ ol.istex-results-items li.istex-results-item ul.istex-results-item-download li.i
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
+  background-image: url(istex-results-item-dl-file.png);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 }
 ol.istex-results-items li.istex-results-item ul.istex-results-item-download li.istex-results-item-dl a.istex-results-item-dl-pdf {
   background-image: url(istex-results-item-dl-pdf.png);
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
 }
 ol.istex-results-items li.istex-results-item ul.istex-results-item-download li.istex-results-item-dl a.istex-results-item-dl-mods {
   background-image: url(istex-results-item-dl-mods.png);
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
+}
+ol.istex-results-items li.istex-results-item ul.istex-results-item-download li.istex-results-item-dl a.istex-results-item-dl-xml {
+  background-image: url(istex-results-item-dl-xml.png);
+}
+ol.istex-results-items li.istex-results-item ul.istex-results-item-download li.istex-results-item-dl a.istex-results-item-dl-txt {
+  background-image: url(istex-results-item-dl-txt.png);
+}
+ol.istex-results-items li.istex-results-item ul.istex-results-item-download li.istex-results-item-dl a.istex-results-item-dl-tei {
+  background-image: url(istex-results-item-dl-tei.png);
+}
+ol.istex-results-items li.istex-results-item ul.istex-results-item-download li.istex-results-item-dl a.istex-results-item-dl-zip {
+  background-image: url(istex-results-item-dl-zip.png);
 }
 ol.istex-results-items li.istex-results-item div.istex-results-item-bottom {
   clear: both;

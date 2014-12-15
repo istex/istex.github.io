@@ -6,17 +6,13 @@
  */
 ;(function ($, window, document, undefined) {
 
-  var pluginName = "istexSearch";
-  var defaults = {
-    istexApi: 'https://api.istex.fr',
-    query: "",
-    resultsEventName: "istex-results"
-  };
+  var pluginName  = "istexSearch";
+  var defaults    = istexConfigDefault;
 
   // The actual plugin constructor
   function Plugin(element, options) {
     this.elt = element;
-    this.settings = $.extend({}, defaults, options);
+    this.settings = $.extend({}, defaults, istexConfig, options);
     this._defaults = defaults;
     this._name = pluginName;
     this.init();
@@ -54,7 +50,7 @@
       // handled by the native jquery jsonp function
       $.jsonp({
         url: self.settings.istexApi + '/document/',
-        data: { q: query },
+        data: { q: query, output: '*' },
         callbackParameter: "callback",
         success: function(items) {
           // hide the error box
@@ -72,6 +68,11 @@
 
       return false;
     });
+
+    // execute a search if query parameter is not blank
+    if (self.settings.query) {
+      $(self.elt).find('.istex-search-form').trigger('submit');
+    }
 
   };
 
