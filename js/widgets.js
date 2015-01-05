@@ -394,7 +394,7 @@ if (!istexConfig) {
         
         // 0 means cross domain security error caused by ezproxy
         // 302 means redirection caused by ezproxy
-        if (opt.status == 0 || opt.status == 302) {
+        if (opt.status === 0 || opt.status === 302) {
           // try to auth on the API with JSONP
           $.jsonp({
             url: self.settings.istexApi + '/corpus/',
@@ -447,7 +447,9 @@ if (!istexConfig) {
    */
   Plugin.prototype.insertConnectBtnIfNotExists = function (cb) {
     var self = this;
-    if ($(self.elt).find('.istex-ezproxy-auth-btn').length > 0) return;
+    if ($(self.elt).find('.istex-ezproxy-auth-btn').length > 0) {
+      return;
+    }
     $(self.elt).append(
       '<button class="istex-ezproxy-auth-btn">Se connecter<div></div></button>'
     );
@@ -475,10 +477,13 @@ if (!istexConfig) {
     // first of all insert the connect button and when
     // it is clicked, then show the login/password popup
     self.insertConnectBtnIfNotExists(function () {
-      if ($(self.elt).find('.istex-auth-popup').length > 0) return;
+      if ($(self.elt).find('.istex-auth-popup').length > 0) {
+        return;
+      }
 
       // append a simple login/password popup
       $(self.elt).append(
+      /*jshint ignore:start*/
       '<form class="istex-auth-popup">' +
         '<div class="istex-auth-popup-wrapper">' +
           '<input class="istex-auth-popup-login" type="text" value="" placeholder="Votre login ..." />' +
@@ -488,6 +493,7 @@ if (!istexConfig) {
         '</div>' +
         '<p class="istex-auth-popup-error"></p>' +
       '</form>'
+      /*jshint ignore:end*/
       );
 
       $(self.elt).find('.istex-auth-popup').submit(function () {
@@ -511,7 +517,7 @@ if (!istexConfig) {
             },
             error: function (opt, err) {
               $(self.elt).find('.istex-auth-popup-error')
-                         .text("Le nom d'utilisateur ou le mot de passe saisi est incorrect.")
+                         .text("Le nom d'utilisateur ou le mot de passe saisi est incorrect.");
             }
           });
         } else if (clicked == 'istex-auth-popup-cancel') {
@@ -845,7 +851,8 @@ if (!istexConfig) {
       if (title.length > self.settings.titleLength) {
         title = title.substring(0, self.settings.titleLength);
         title += "…";
-        itemElt.find('.istex-results-item-title').attr('title', itemElt.find('.istex-results-item-title').text());
+        itemElt.find('.istex-results-item-title')
+               .attr('title',itemElt.find('.istex-results-item-title').text());
         itemElt.find('.istex-results-item-title').text(title);
       }
 
