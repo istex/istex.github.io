@@ -2,12 +2,27 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <title>Authentification</title>
+        <title>Ezproxy authentication</title>
+        <!--
+        
+        Cette fenêtre permet une intégration fluide de 
+        l'authentification par ezproxy dans les widgets istex
+        https://github.com/istex/widgets.istex.fr
+
+        Le principe est de charger cette page ezproxifiée 
+        dans une nouvelle fenêtre. L'utilisateur est alors invité
+        à s'authentifier sur son ezproxy. Une fois authentifié,
+        cette page peut se charger.
+        Son code javascript window.close() permet de la fermer
+        instantanément pour redonner la main de faon fluide à la page
+        sur laquelle les widgets sont chargés.
+
+        -->
     </head>
     <body>
 
         <script type="text/javascript">
-            close();
+            window.close();
         </script>
 
     </body>
