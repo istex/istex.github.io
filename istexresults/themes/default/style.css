@@ -15,6 +15,7 @@ ol.istex-results-items li.istex-results-item {
   margin: 0;
   margin-top: 10px;
   margin-bottom: 10px;
+  list-style-type: none;
 }
 ol.istex-results-items li.istex-results-item a.istex-results-item-title {
   padding: 0;
@@ -59,6 +60,7 @@ ol.istex-results-items li.istex-results-item ul.istex-results-item-download li.i
   padding: 0;
   margin: 0;
   margin-top: 8px;
+  list-style-type: none;
 }
 ol.istex-results-items li.istex-results-item ul.istex-results-item-download li.istex-results-item-dl a {
   padding: 2px;
