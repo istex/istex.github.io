@@ -604,7 +604,6 @@ if (!istexConfig) {
 
     // listen connected event (auth widget tells auth is ok)
     $(document).bind(self.settings.connectedEventName, function (event, istexAuth) {
-      void 0;
       // get and map the api requester
       self.istexApiRequester = istexAuth.istexApiRequester;
 
@@ -662,6 +661,18 @@ if (!istexConfig) {
           $(self.elt).find('.istex-search-error').show();
         }
       });
+
+      // adjust styles comming for example from ENT
+      // to avoid a small search button:
+      // https://trello-attachments.s3.amazonaws.com/547753d55c854b80778562d6/725x667/51dcbf7933acc93c8cb85a642c321a4d/upload_2015-01-12_at_6.10.52_pm.png
+      $(self.elt).find('.istex-search-submit').css(
+        'font-size',
+        $(self.elt).find('.istex-search-input').css('font-size')
+      );
+      $(self.elt).find('.istex-search-submit').css(
+        'padding',
+        $(self.elt).find('.istex-search-input').css('padding')
+      );
 
       return false;
     });
