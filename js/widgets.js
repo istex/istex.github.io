@@ -286,32 +286,35 @@
 
 var istexConfigDefault = {
   // l'adresse de l'API de l'Istex
+  // pour une ezproxyfication, réglez ici l'adresse ezproxyfiée
+  // ex à l'UL: https://api-istex-fr.bases-doc.univ-lorraine.fr 
   istexApi: 'https://api.istex.fr',
   
   // pour lancer une recherche au chargement de la page
-  // positionner les mots à rechercher
+  // indiquer les mots à rechercher (argument de ?q= au niveau de l'api istex)
   query: "",
+
+  // le nombre max de caractères du résumé à afficher
+  abstractLength: 250,
+
+  // le nombre max de caractères du titre à afficher
+  titleLength: 100,
+
+  // le format qu'on souhaite voir s'ouvrir quand on clique sur le titre
+  fullTextOnTitle: 'pdf',
   
   // le nom de l'évènement émit au moment de l'authentification réussie
   connectedEventName: "istex-connected",
 
   // le nom de l'évènement émit au moment d'une recherche    
-  resultsEventName: "istex-results",
-
-  // la taille max en nombre de caractères du résumé
-  abstractLength: 250,
-
-  // la taille max en nombre de caractères du titre
-  titleLength: 100,
-
-  // quel est le format clickable au niveau du titre
-  fullTextOnTitle: 'pdf'
+  resultsEventName: "istex-results"
 };
 
 // create a empty istexConfig variable
 if (!istexConfig) {
   var istexConfig = {};
 }
+
 /* jshint -W117 */
 'use strict';
 
@@ -503,13 +506,16 @@ if (!istexConfig) {
           // if "Se connecter" is clicked, then try to auth through AJAX
           // with the given login/password
           var httpOptions = {
-            username: $(self.elt).find('istex-auth-popup-login').val(),
-            password: $(self.elt).find('istex-auth-popup-password').val(),
+            headers: {
+              "Authorization": "Basic " + btoa(
+                $(self.elt).find('.istex-auth-popup-login').val() + ":" +
+                $(self.elt).find('.istex-auth-popup-password').val())
+            }
           };
+
           $.ajax({
             url: self.settings.istexApi + '/corpus/',
-            username: httpOptions.username,
-            password: httpOptions.password,
+            headers: httpOptions.headers,
             success: function () {
               // auth ok, then cleanup and respond ok
               $(self.elt).find('.istex-auth-popup').remove();
@@ -537,7 +543,7 @@ if (!istexConfig) {
    * Create a self.istexApiRequester function
    * used to wrap jsonp or ajax query system
    */
-  Plugin.prototype.setupGenericRequester = function (authMode, options) {
+  Plugin.prototype.setupGenericRequester = function (authMode, authOptions) {
     var self = this;
 
     // create a generic requester
@@ -547,17 +553,13 @@ if (!istexConfig) {
       self.istexApiRequester = function (options) {
         var reqOpt = $.extend({
           callbackParameter: "callback"
-        }, options);
+        }, authOptions, options);
         return $.jsonp(reqOpt);
       };
     } else {
       // ajax
       self.istexApiRequester = function (options) {
-        var reqOpt = $.extend({
-          headers: {
-            // todo : basic auth <= options
-          }
-        }, options);
+        var reqOpt = $.extend(authOptions, options);
         return $.ajax(reqOpt);
       };
     }
@@ -642,6 +644,9 @@ if (!istexConfig) {
 
       var query = $(self.elt).find('input.istex-search-input').val().trim();
       query = query ? query : '*';
+
+      // set the timer to know when the query has been done (ex: to have the query time)
+      self.queryStartTime = new Date();
 
       // send the request to the istex api
       self.istexApiRequester({
@@ -790,8 +795,8 @@ if (!istexConfig) {
     /*jshint ignore:end*/
 
     // bind received results
-    $(document).bind(self.settings.resultsEventName, function (event, results) {
-      self.updateResultsInTheDom(results);
+    $(document).bind(self.settings.resultsEventName, function (event, results, istexSearch) {
+      self.updateResultsInTheDom(results, istexSearch);
     });
 
   };
@@ -799,12 +804,19 @@ if (!istexConfig) {
   /**
    * Update the DOM with the received results
    */
-  Plugin.prototype.updateResultsInTheDom = function (results) {
+  Plugin.prototype.updateResultsInTheDom = function (results, istexSearch) {
     var self = this;
+
+    // calculate the query time
+    var queryElapsedTime = new Date() - istexSearch.queryStartTime;
 
     // build the result stats element
     var stats = self.tpl.stats.clone();
-    stats.text('Environ ' + niceNumber(results.total) + ' résultats');
+    if (results.total > 0) {
+      stats.text('Environ ' + niceNumber(results.total) + ' résultats (' + (queryElapsedTime/1000).toFixed(2) + ' secondes)');
+    } else {
+      stats.text('Aucun résultat');      
+    }
     
     // build the result list
     var items = self.tpl.items.clone();
@@ -816,7 +828,7 @@ if (!istexConfig) {
       if (item.abstract) {
         itemElt.find('.istex-results-item-abstract').text(item.abstract);  
       } else {
-        itemElt.find('.istex-results-item-abstract').text('…');
+        itemElt.find('.istex-results-item-abstract').text('');
         itemElt.find('.istex-results-item-abstract').attr('title', 'Pas de résumé');
       }
       itemElt.find('.istex-results-item-corpus').text(item.corpusName);
