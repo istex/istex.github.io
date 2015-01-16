@@ -41,10 +41,10 @@
   Plugin.prototype.loadInputForm = function () {
     var self = this;
 
-    /*jshint ignore:start*/
     // insert the form search into the DOM
     $(self.elt).empty();
-    $(self.elt).append(
+    var searchFormHtml = $(
+      /*jshint ignore:start*/
       '<form class="istex-search-form">' +
         '<div class="istex-search-bar-wrapper">' +
           '<input class="istex-search-submit" type="submit" value="Rechercher" />' +
@@ -54,8 +54,11 @@
         '</div>' +
         '<p class="istex-search-error"></p>' +
       '</form>'
-    );
-    /*jshint ignore:end*/
+      /*jshint ignore:end*/
+    ).hide();
+
+    $(self.elt).append(searchFormHtml);
+    searchFormHtml.fadeIn();
 
     // initialize query parameter
     $(self.elt).find('.istex-search-input').val(self.settings.query);
@@ -68,6 +71,9 @@
 
       // set the timer to know when the query has been done (ex: to have the query time)
       self.queryStartTime = new Date();
+
+      // send the event telling a new query is sent
+      $.event.trigger(self.settings.waitingForResultsEventName, [ self ]);
 
       // send the request to the istex api
       self.istexApiRequester({

@@ -307,7 +307,11 @@ var istexConfigDefault = {
   connectedEventName: "istex-connected",
 
   // le nom de l'évènement émit au moment d'une recherche    
-  resultsEventName: "istex-results"
+  resultsEventName: "istex-results",
+
+  // le nom de l'évènement émit a chaque fois qu'une recherche est envoyée
+  // et qui donnera probablement (sauf erreur) lieux à un event "istex-results"
+  waitingForResultsEventName: "istex-waiting-for-results"
 };
 
 // create a empty istexConfig variable
@@ -453,9 +457,11 @@ if (!istexConfig) {
     if ($(self.elt).find('.istex-ezproxy-auth-btn').length > 0) {
       return;
     }
-    $(self.elt).append(
+    var authButtonHtml = $(
       '<button class="istex-ezproxy-auth-btn">Se connecter<div></div></button>'
-    );
+    ).hide();
+    $(self.elt).append(authButtonHtml);
+    authButtonHtml.fadeIn();
     $(self.elt).find('.istex-ezproxy-auth-btn').click(cb);
   };
 
@@ -469,68 +475,101 @@ if (!istexConfig) {
 
   /**
    * Authenticate with the standard HTTP basic auth
-   * - shows a HTML popup to ask login and password
+   * - shows a HTML form to ask login and password
    * - when submitted, try to login through AJAX
-   * - if auth ok, then close the popup and return credentials to cb
+   * - if auth ok, then close the form and return credentials to cb
    * - if auth ok, then show an error message
    */
   Plugin.prototype.authWithHTTP = function (cb) {
     var self = this;
 
     // first of all insert the connect button and when
-    // it is clicked, then show the login/password popup
-    self.insertConnectBtnIfNotExists(function () {
-      if ($(self.elt).find('.istex-auth-popup').length > 0) {
+    // it is clicked, then show the login/password form
+    self.insertConnectBtnIfNotExists(function (clickEvent) {
+      if ($(self.elt).find('.istex-auth-form').length > 0) {
         return;
       }
 
-      // append a simple login/password popup
-      $(self.elt).append(
-      /*jshint ignore:start*/
-      '<form class="istex-auth-popup">' +
-        '<div class="istex-auth-popup-wrapper">' +
-          '<input class="istex-auth-popup-login" type="text" value="" placeholder="Votre login ..." />' +
-          '<input class="istex-auth-popup-password" type="password" value="" placeholder="Votre mot de passe ..." />' +
-          '<input class="istex-auth-popup-cancel" type="submit" value="Annuler" />' +
-          '<input class="istex-auth-popup-submit" type="submit" value="Se connecter" />' +
-        '</div>' +
-        '<p class="istex-auth-popup-error"></p>' +
-      '</form>'
-      /*jshint ignore:end*/
-      );
+      // get a pointer to the connect button in order
+      // to be able to hide or show it 
+      var connectButton = $(clickEvent.target);
 
-      $(self.elt).find('.istex-auth-popup').submit(function () {
-        var clicked = $(self.elt).find(".istex-auth-popup input[type=submit]:focus")
-                                 .attr('class');
-        if (clicked == 'istex-auth-popup-submit') {
-          // if "Se connecter" is clicked, then try to auth through AJAX
-          // with the given login/password
-          var httpOptions = {
-            headers: {
-              "Authorization": "Basic " + btoa(
-                $(self.elt).find('.istex-auth-popup-login').val() + ":" +
-                $(self.elt).find('.istex-auth-popup-password').val())
-            }
-          };
+      // hide the connect button
+      connectButton.hide();
 
-          $.ajax({
-            url: self.settings.istexApi + '/corpus/',
-            headers: httpOptions.headers,
-            success: function () {
-              // auth ok, then cleanup and respond ok
-              $(self.elt).find('.istex-auth-popup').remove();
-              return cb(null, httpOptions);
-            },
-            error: function (opt, err) {
-              $(self.elt).find('.istex-auth-popup-error')
-                         .text("Le nom d'utilisateur ou le mot de passe saisi est incorrect.");
-            }
-          });
-        } else if (clicked == 'istex-auth-popup-cancel') {
-          // if "Annuler" button is clicked, then cleanup
-          $(self.elt).find('.istex-auth-popup').remove();
-          cb(new Error('HTTP auth canceled'));
-        }
+      var authFormHtml = $(
+        /*jshint ignore:start*/
+        '<form class="istex-auth-form">' +
+          '<div class="istex-auth-form-wrapper">' +
+            '<input class="istex-auth-form-login" type="text" value="" placeholder="Votre login ..." />' +
+            '<input class="istex-auth-form-password" type="password" value="" placeholder="Votre mot de passe ..." />' +
+            '<input class="istex-auth-form-submit" type="submit" value="Se connecter" default="default"/>' +
+            '<button class="istex-auth-form-cancel">Annuler</button>' +
+          '</div>' +
+          '<p class="istex-auth-form-info">' +
+            '<a href="https://ia.inist.fr/people/newer" target="_blank">S\'inscrire</a> | ' +
+            '<a href="https://ia.inist.fr/auth/retrieve" target="_blank">Retrouver son mot de passe</a> | ' +
+            '<a href="mailto:istex@inist.fr?subject=Demande d\'un accès à la plateforme ISTEX">Demander une autorisation Istex</a>' +
+          '</p>' +
+          '<p class="istex-auth-form-error"></p>' +
+        '</form>'
+        /*jshint ignore:end*/
+      ).hide();
+
+      // then show a simple login/password form
+      $(self.elt).append(authFormHtml);
+      authFormHtml.fadeIn();
+
+      // focus to the first field (username)
+      $(self.elt).find('.istex-auth-form-login').focus();
+
+      // handle the cancel click
+      $(self.elt).find('.istex-auth-form-cancel').click(function () {
+        // if "Annuler" button is clicked, then cleanup
+        $(self.elt).find('.istex-auth-form').remove();
+        connectButton.fadeIn();
+        return false;
+      });
+
+      // handle the submit or "Se connecter" click
+      $(self.elt).find('.istex-auth-form').submit(function () {
+
+        // disable form during authentification check      
+        authFormHtml.find('input').attr('disabled', 'disabled');
+        // cleanup error message
+        $(self.elt).find('.istex-auth-form-error').hide();
+
+        // if "Se connecter" is clicked, then try to auth through AJAX
+        // with the given login/password
+        var httpOptions = {
+          headers: {
+            "Authorization": "Basic " + btoa(
+              $(self.elt).find('.istex-auth-form-login').val() + ":" +
+              $(self.elt).find('.istex-auth-form-password').val())
+          }
+        };
+
+        $.ajax({
+          url: self.settings.istexApi + '/corpus/',
+          headers: httpOptions.headers,
+          success: function () {
+            // auth ok, then cleanup and respond ok
+            $(self.elt).find('.istex-auth-form').fadeOut({
+              complete: function () {
+                cb(null, httpOptions);
+              }
+            });
+          },
+          error: function (opt, err) {
+            // enable form when authentification failed
+            authFormHtml.find('input').removeAttr('disabled');
+
+            $(self.elt).find('.istex-auth-form-error')
+                       .text("Le nom d'utilisateur ou le mot de passe saisi est incorrect.")
+                       .fadeIn();
+          }
+        });
+
         return false;
       });
     
@@ -620,10 +659,10 @@ if (!istexConfig) {
   Plugin.prototype.loadInputForm = function () {
     var self = this;
 
-    /*jshint ignore:start*/
     // insert the form search into the DOM
     $(self.elt).empty();
-    $(self.elt).append(
+    var searchFormHtml = $(
+      /*jshint ignore:start*/
       '<form class="istex-search-form">' +
         '<div class="istex-search-bar-wrapper">' +
           '<input class="istex-search-submit" type="submit" value="Rechercher" />' +
@@ -633,8 +672,11 @@ if (!istexConfig) {
         '</div>' +
         '<p class="istex-search-error"></p>' +
       '</form>'
-    );
-    /*jshint ignore:end*/
+      /*jshint ignore:end*/
+    ).hide();
+
+    $(self.elt).append(searchFormHtml);
+    searchFormHtml.fadeIn();
 
     // initialize query parameter
     $(self.elt).find('.istex-search-input').val(self.settings.query);
@@ -647,6 +689,9 @@ if (!istexConfig) {
 
       // set the timer to know when the query has been done (ex: to have the query time)
       self.queryStartTime = new Date();
+
+      // send the event telling a new query is sent
+      $.event.trigger(self.settings.waitingForResultsEventName, [ self ]);
 
       // send the request to the istex api
       self.istexApiRequester({
@@ -799,6 +844,12 @@ if (!istexConfig) {
       self.updateResultsInTheDom(results, istexSearch);
     });
 
+    // bind waiting for result event
+    $(document).bind(self.settings.waitingForResultsEventName, function (event) {
+      // fade effect on the old result page
+      // to tell the user a query is in process
+      $(self.elt).css({ opacity: 0.5 });
+    });
   };
 
   /**
@@ -813,13 +864,15 @@ if (!istexConfig) {
     // build the result stats element
     var stats = self.tpl.stats.clone();
     if (results.total > 0) {
-      stats.text('Environ ' + niceNumber(results.total) + ' résultats (' + (queryElapsedTime/1000).toFixed(2) + ' secondes)');
+      stats.text('Environ '
+        + niceNumber(results.total)
+        + ' résultats (' + (queryElapsedTime/1000).toFixed(2) + ' secondes)');
     } else {
       stats.text('Aucun résultat');      
     }
     
     // build the result list
-    var items = self.tpl.items.clone();
+    var items = self.tpl.items.clone().hide();
     $.each(results.hits, function (idx, item) {
       var itemElt = self.tpl.item.clone();
 
@@ -884,12 +937,14 @@ if (!istexConfig) {
 
     // cleanup the result list in the DOM
     $(self.elt).empty();
+    $(self.elt).css({ opacity: 1.0 });
 
     // insert the results stats into the DOM
     $(self.elt).append(stats);
 
     // insert the result list into the DOM
     $(self.elt).append(items);
+    items.fadeIn();
   };
 
 
