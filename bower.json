@@ -13,6 +13,7 @@
     "tests"
   ],
   "dependencies": {
-    "jquery": "1.11"
+    "jquery": "1.11",
+    "js-base64": "~2.1.7"
   }
 }
