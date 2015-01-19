@@ -2,7 +2,6 @@ div.istex-results-items-stats {
   padding: 0;
   margin: 0;
   line-height: 30px;
-  font-size: small;
   color: #808080;
 }
 ol.istex-results-items {
@@ -20,8 +19,8 @@ ol.istex-results-items li.istex-results-item {
 ol.istex-results-items li.istex-results-item a.istex-results-item-title {
   padding: 0;
   margin: 0;
-  font-size: 100%;
   font-weight: bold;
+  font-size: large;
   text-decoration: none;
   color: #478DA7;
 }
@@ -29,7 +28,7 @@ ol.istex-results-items li.istex-results-item p.istex-results-item-abstract {
   padding: 0;
   margin: 0;
   margin-top: 4px;
-  font-size: 80%;
+  font-size: smaller;
   font-weight: lighter;
   text-decoration: none;
   text-align: justify;
@@ -39,7 +38,7 @@ ol.istex-results-items li.istex-results-item div.istex-results-item-corpus {
   padding: 2px;
   margin: 0;
   margin-top: 8px;
-  font-size: 90%;
+  font-size: smaller;
   height: 16px;
   vertical-align: middle;
   font-family: monospace;
@@ -97,4 +96,39 @@ ol.istex-results-items li.istex-results-item ul.istex-results-item-download li.i
 }
 ol.istex-results-items li.istex-results-item div.istex-results-item-bottom {
   clear: both;
+}
+.istex-results-pagination {
+  margin: auto;
+  text-align: center;
+}
+.istex-results-pagination ul {
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+}
+.istex-results-pagination ul li {
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+.istex-results-pagination ul li a {
+  text-decoration: none;
+  cursor: pointer;
+}
+.istex-results-pagination ul li a:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+.istex-results-pagination ul li.istex-results-pagination-page-selected {
+  font-weight: bold;
+}
+.istex-results-pagination ul li.istex-results-pagination-page-selected a {
+  color: black;
+  cursor: default;
+}
+.istex-results-pagination ul li.istex-results-pagination-page-selected a:hover {
+  text-decoration: none;
+  cursor: default;
 }

@@ -484,6 +484,15 @@ var istexConfigDefault = {
   // indiquer les mots à rechercher (argument de ?q= au niveau de l'api istex)
   query: "",
 
+  // il est possible de cacher la zone de pagination avec ce paramètre
+  showPagination: true,
+
+  // nombre de résultats souhaités par page
+  pageSize: 50,
+
+  // nombre max de pages à montrer dans la zone de pagination
+  maxPagesInPagination: 10,
+
   // le nombre max de caractères du résumé à afficher
   abstractLength: 250,
 
@@ -498,6 +507,9 @@ var istexConfigDefault = {
 
   // le nom de l'évènement émit au moment d'une recherche    
   resultsEventName: "istex-results",
+
+  // le nom de l'évènement émit au moment d'un changement de page
+  gotoPageEventName: "istex-gotopage",
 
   // le nom de l'évènement émit a chaque fois qu'une recherche est envoyée
   // et qui donnera probablement (sauf erreur) lieux à un event "istex-results"
@@ -841,6 +853,12 @@ if (!istexConfig) {
       // auth is ok, then load the user interface
       self.loadInputForm();
     });
+
+    // listen istex-gotopage event
+    $(document).bind(self.settings.gotoPageEventName, function (event, pageIdx) {
+      self.execQuery(null, pageIdx);
+    });
+
   };
 
   /**
@@ -873,35 +891,12 @@ if (!istexConfig) {
 
     // connect the submit action
     $(self.elt).find('.istex-search-form').submit(function () {
-
+      
       var query = $(self.elt).find('input.istex-search-input').val().trim();
       query = query ? query : '*';
-
-      // set the timer to know when the query has been done (ex: to have the query time)
-      self.queryStartTime = new Date();
-
-      // send the event telling a new query is sent
-      $.event.trigger(self.settings.waitingForResultsEventName, [ self ]);
-
-      // send the request to the istex api
-      self.istexApiRequester({
-        url: self.settings.istexApi + '/document/',
-        data: { q: query, output: '*' },
-        //callbackParameter: "callback",
-        success: function(items) {
-          // hide the error box
-          $(self.elt).find('.istex-search-error').hide();
-          // forward the results as a global event
-          $.event.trigger(self.settings.resultsEventName, [ items, self ]);
-        },
-        error: function (opt, err) {
-          $(self.elt).find('.istex-search-error').html(
-            '<a href="https://api.istex.fr/corpus/">API Istex</a> non joignable.'
-          );
-          $(self.elt).find('.istex-search-error').show();
-        }
-      });
-
+      
+      self.execQuery(query);
+      
       return false;
     }); // end of ('.istex-search-form').submit(
 
@@ -923,6 +918,53 @@ if (!istexConfig) {
     }
 
   };
+
+  /**
+   * Execute a query
+   */
+  Plugin.prototype.execQuery = function (query, pageIdx) {
+    var self = this;
+
+    // if no page id selected the setup one
+    pageIdx = pageIdx || 1;
+
+    // if no query selected try to take the latest one
+    if (query) {
+      self.query = query;
+    } else {
+      query = self.query;
+    }
+
+    // set the timer to know when the query has been done (ex: to have the query time)
+    self.queryStartTime = new Date();
+
+    // send the event telling a new query is sent
+    $.event.trigger(self.settings.waitingForResultsEventName, [ self ]);
+
+    // send the request to the istex api
+    self.istexApiRequester({
+      url: self.settings.istexApi + '/document/',
+      data: {
+        q: query,
+        output: '*',
+        size: self.settings.pageSize,
+        from: ((pageIdx-1) * self.settings.pageSize)
+      },
+      success: function(items) {
+        // hide the error box
+        $(self.elt).find('.istex-search-error').hide();
+        // forward the results as a global event
+        $.event.trigger(self.settings.resultsEventName, [ items, self ]);
+      },
+      error: function (opt, err) {
+        $(self.elt).find('.istex-search-error').html(
+          '<a href="https://api.istex.fr/corpus/">API Istex</a> non joignable.'
+        );
+        $(self.elt).find('.istex-search-error').show();
+      }
+    });
+  };
+
 
   // A really lightweight plugin wrapper around the constructor,
   // preventing against multiple instantiations
@@ -963,6 +1005,25 @@ if (!istexConfig) {
     self.tpl.stats = $(
       '<div class="istex-results-items-stats">' +
         'Environ 783 594 résultats' + 
+      '</div>'
+    );
+
+    self.tpl.pagination = $(
+      '<div class="istex-results-pagination">' +
+        '<button class="istex-results-pagination-prec">Page précédente</button>' +
+        '<ul class="istex-results-pagination-plist">' +
+          '<li class="istex-results-pagination-page-selected">1</li>' +
+          '<li>2</li>' +
+          '<li>3</li>' +
+          '<li>4</li>' +
+          '<li>5</li>' +
+          '<li>6</li>' +
+          '<li>7</li>' +
+          '<li>8</li>' +
+          '<li>9</li>' +
+          '<li>10</li>' +
+        '</ul>' +
+        '<button class="istex-results-pagination-next">Page suivante</button>' +
       '</div>'
     );
 
@@ -1054,9 +1115,15 @@ if (!istexConfig) {
     // build the result stats element
     var stats = self.tpl.stats.clone();
     if (results.total > 0) {
-      stats.text('Environ '
-        + niceNumber(results.total)
-        + ' résultats (' + (queryElapsedTime/1000).toFixed(2) + ' secondes)');
+      if (self.selectedPage > 1) {
+        stats.text('Page ' + self.selectedPage + ' sur environ '
+          + niceNumber(results.total)
+          + ' résultats (' + (queryElapsedTime/1000).toFixed(2) + ' secondes)');
+      } else {
+        stats.text('Environ '
+          + niceNumber(results.total)
+          + ' résultats (' + (queryElapsedTime/1000).toFixed(2) + ' secondes)');        
+      }
     } else {
       stats.text('Aucun résultat');      
     }
@@ -1066,7 +1133,6 @@ if (!istexConfig) {
     $.each(results.hits, function (idx, item) {
       var itemElt = self.tpl.item.clone();
 
-      void 0;
       itemElt.find('.istex-results-item-title').text(item.title);
       if (item.abstract) {
         itemElt.find('.istex-results-item-abstract').text(item.abstract);  
@@ -1135,8 +1201,104 @@ if (!istexConfig) {
     // insert the result list into the DOM
     $(self.elt).append(items);
     items.fadeIn();
+
+    // handle the pagination element
+    self.updatePaginationInTheDom(
+      self.selectedPage || 1,
+      Math.ceil(results.total / self.settings.pageSize)
+    );
   };
 
+  /**
+   * Update the pagination element in the DOM
+   */
+  Plugin.prototype.updatePaginationInTheDom = function (selectedPage, numberOfPage) {
+    var self = this;
+
+    // skip the pagination zone if not wanted
+    if (!self.settings.showPagination) {
+      return;
+    }
+
+    // calculate the pageStart and pageEnd
+    var pageStart, pageEnd;
+    var maxPagesInPagination = self.settings.maxPagesInPagination;
+
+    // try to put the selectedPage in the middle
+    pageStart = selectedPage - Math.round(maxPagesInPagination/2) + 1;
+    pageEnd   = selectedPage + Math.round(maxPagesInPagination/2);
+    // manage the border case
+    if (pageStart < 1) {
+      pageStart = 1;
+    }
+    if (pageEnd > numberOfPage) {
+      pageEnd = numberOfPage;
+    }
+    // if less page to show than maxPagesInPagination
+    if (pageEnd - pageStart < maxPagesInPagination - 1) {
+      if (pageEnd - selectedPage < selectedPage - pageStart) {
+        pageStart = pageEnd - maxPagesInPagination + 1;
+      } else {
+        pageEnd = pageStart + maxPagesInPagination - 1;
+      }
+    }
+
+    // build the pagination HTML
+    var pagination = self.tpl.pagination.clone().hide();
+   
+    // do not show "précédent" link if the first page is selected
+    if (selectedPage == 1) {
+      pagination.find('.istex-results-pagination-prec').hide();
+    } else {
+      // when the prec page is clicked, goto selectedPage - 1
+      pagination.find('.istex-results-pagination-prec').click(function () {
+        self.gotoPage(selectedPage - 1);
+      });
+    }
+    // do not show "suivant" link if the last page is selected
+    if (selectedPage == numberOfPage) {
+      pagination.find('.istex-results-pagination-next').hide();
+    } else {
+      // when the next page is clicked, goto selectedPage + 1
+      pagination.find('.istex-results-pagination-next').click(function () {
+        self.gotoPage(selectedPage + 1);
+      });
+    }
+
+    // fill the pagination zone with pages
+    pagination.find('ul.istex-results-pagination-plist').empty();
+    for (var pageIdx = pageStart; pageIdx <= pageEnd; pageIdx++) {
+      var pageElt = $('<li><a>' + pageIdx + '</a></li>').data('page-idx', pageIdx);
+      if (pageIdx == selectedPage) {
+        pageElt.addClass('istex-results-pagination-page-selected');
+      } else {
+        // when the page is clicked, goto pageIdx
+        pageElt.click(function () {
+          self.gotoPage($(this).data('page-idx'));
+        });
+      }
+      //console.log(pageElt, pagination.find('.istex-results-pagination ul'))
+      pagination.find('ul.istex-results-pagination-plist').append(pageElt);
+    }
+
+    // insert the pagination zone into the DOM
+    $(self.elt).append(pagination);
+    pagination.fadeIn();
+  };
+
+  /**
+   * When a pagination link is clicked
+   * goto the specified page
+   */
+  Plugin.prototype.gotoPage = function (pageIdx) {
+    var self = this;
+    
+    // remember the selected page
+    self.selectedPage = pageIdx;
+
+    // send the event telling which page is requested
+    $.event.trigger(self.settings.gotoPageEventName, [ pageIdx ]);
+  };
 
   /**
    * When ezproxy is used, the api link is not api.istex.fr
