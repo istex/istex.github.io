@@ -38,6 +38,15 @@
   font-family: monospace;
   display: none;
 }
+.istex-search-form div.istex-search-loading {
+  background-image: url(ajax-loader.gif);
+  background-repeat: no-repeat;
+  float: left;
+  width: 24px;
+  height: 24px;
+  margin-top: 4px;
+  margin-right: 4px;
+}
 .istex-ezproxy-auth-btn {
   position: relative;
   padding: 8px;

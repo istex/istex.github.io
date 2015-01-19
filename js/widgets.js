@@ -879,6 +879,7 @@ if (!istexConfig) {
           '</span>' +
         '</div>' +
         '<p class="istex-search-error"></p>' +
+        '<div class="istex-search-loading"></div>' +
       '</form>'
       /*jshint ignore:end*/
     ).hide();
@@ -890,8 +891,7 @@ if (!istexConfig) {
     $(self.elt).find('.istex-search-input').val(self.settings.query);
 
     // connect the submit action
-    $(self.elt).find('.istex-search-form').submit(function () {
-      
+    $(self.elt).find('.istex-search-form').submit(function () {      
       var query = $(self.elt).find('input.istex-search-input').val().trim();
       query = query ? query : '*';
       
@@ -941,6 +941,9 @@ if (!istexConfig) {
     // send the event telling a new query is sent
     $.event.trigger(self.settings.waitingForResultsEventName, [ self ]);
 
+    // show the loading bar
+    $(self.elt).find('.istex-search-loading').fadeIn();
+
     // send the request to the istex api
     self.istexApiRequester({
       url: self.settings.istexApi + '/document/',
@@ -951,8 +954,9 @@ if (!istexConfig) {
         from: ((pageIdx-1) * self.settings.pageSize)
       },
       success: function(items) {
-        // hide the error box
+        // hide the error box and the loading box
         $(self.elt).find('.istex-search-error').hide();
+        $(self.elt).find('.istex-search-loading').fadeOut();
         // forward the results as a global event
         $.event.trigger(self.settings.resultsEventName, [ items, self ]);
       },
@@ -961,6 +965,7 @@ if (!istexConfig) {
           '<a href="https://api.istex.fr/corpus/">API Istex</a> non joignable.'
         );
         $(self.elt).find('.istex-search-error').show();
+        $(self.elt).find('.istex-search-loading').fadeOut();
       }
     });
   };
@@ -1112,17 +1117,21 @@ if (!istexConfig) {
     // calculate the query time
     var queryElapsedTime = new Date() - istexSearch.queryStartTime;
 
-    // build the result stats element
+    // build the results statistics element
     var stats = self.tpl.stats.clone();
     if (results.total > 0) {
+      var queryTotalTime = (queryElapsedTime/1000).toFixed(2);
+      var queryElasticSearchTime = 'Réseau : ' + ((queryElapsedTime - results.esReqStats.took)/1000).toFixed(2) + ' sec, Moteur de recherche : ' + (results.esReqStats.took/1000).toFixed(2) + ' sec';
+      var querySpeedHtml = '<span title="' + queryElasticSearchTime + '">(' + queryTotalTime + ' secondes)</span>';
+      //querySpeedHtml.attr('title', 'EEEE');
       if (self.selectedPage > 1) {
-        stats.text('Page ' + self.selectedPage + ' sur environ '
+        stats.html('Page ' + self.selectedPage + ' sur environ '
           + niceNumber(results.total)
-          + ' résultats (' + (queryElapsedTime/1000).toFixed(2) + ' secondes)');
+          + ' résultats ' + querySpeedHtml);
       } else {
-        stats.text('Environ '
+        stats.html('Environ '
           + niceNumber(results.total)
-          + ' résultats (' + (queryElapsedTime/1000).toFixed(2) + ' secondes)');        
+          + ' résultats ' + querySpeedHtml);
       }
     } else {
       stats.text('Aucun résultat');      
