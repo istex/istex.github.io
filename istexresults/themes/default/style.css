@@ -132,3 +132,15 @@ ol.istex-results-items li.istex-results-item div.istex-results-item-bottom {
   text-decoration: none;
   cursor: default;
 }
+p.istex-results-error {
+  margin: 5px 0 0 0;
+  padding: 0;
+  color: #DD4B39;
+}
+p.istex-results-error span.istex-results-error-msg {
+  font-size: medium;
+}
+p.istex-results-error span.istex-results-error-raw {
+  font-size: small;
+  font-style: italic;
+}
