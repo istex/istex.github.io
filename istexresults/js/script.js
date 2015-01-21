@@ -30,7 +30,7 @@
 
     self.tpl.pagination = $(
       '<div class="istex-results-pagination">' +
-        '<button class="istex-results-pagination-prec">Page précédente</button>' +
+        '<button class="istex-results-pagination-prec" title="Page précédente">Page précédente</button>' +
         '<ul class="istex-results-pagination-plist">' +
           '<li class="istex-results-pagination-page-selected">1</li>' +
           '<li>2</li>' +
@@ -43,7 +43,7 @@
           '<li>9</li>' +
           '<li>10</li>' +
         '</ul>' +
-        '<button class="istex-results-pagination-next">Page suivante</button>' +
+        '<button class="istex-results-pagination-next" title="Page suivante">Page suivante</button>' +
       '</div>'
     );
 
@@ -136,6 +136,13 @@
    */
   Plugin.prototype.updateResultsInTheDom = function (results, istexSearch) {
     var self = this;
+
+    // not not fill anything in the results list
+    // if results are empty
+    if (!results) {
+      $(self.elt).empty();
+      return;
+    }
 
     // calculate the query time
     var queryElapsedTime = new Date() - istexSearch.queryStartTime;
@@ -241,10 +248,12 @@
     items.fadeIn();
 
     // handle the pagination element
-    self.updatePaginationInTheDom(
-      self.selectedPage || 1,
-      Math.ceil(results.total / self.settings.pageSize)
-    );
+    if (results.total > 0) {
+      self.updatePaginationInTheDom(
+        self.selectedPage || 1,
+        Math.ceil(results.total / self.settings.pageSize)
+      );
+    }
   };
 
   /**

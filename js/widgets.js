@@ -879,7 +879,7 @@ if (!istexConfig) {
           '</span>' +
         '</div>' +
         '<p class="istex-search-error"></p>' +
-        '<div class="istex-search-loading"></div>' +
+        '<div class="istex-search-loading" title="Recherche en cours"></div>' +
       '</form>'
       /*jshint ignore:end*/
     ).hide();
@@ -941,8 +941,9 @@ if (!istexConfig) {
     // send the event telling a new query is sent
     $.event.trigger(self.settings.waitingForResultsEventName, [ self ]);
 
-    // show the loading bar
-    $(self.elt).find('.istex-search-loading').fadeIn();
+    // show the loading bar and hide the errors
+    $(self.elt).find('.istex-search-loading').show();
+    $(self.elt).find('.istex-search-error').hide();
 
     // send the request to the istex api
     self.istexApiRequester({
@@ -964,8 +965,11 @@ if (!istexConfig) {
         $(self.elt).find('.istex-search-error').html(
           '<a href="https://api.istex.fr/corpus/">API Istex</a> non joignable.'
         );
-        $(self.elt).find('.istex-search-error').show();
+        $(self.elt).find('.istex-search-error').fadeIn();
         $(self.elt).find('.istex-search-loading').fadeOut();
+
+        // forward the empty results as a global event
+        $.event.trigger(self.settings.resultsEventName, [ null, self ]);
       }
     });
   };
@@ -1015,7 +1019,7 @@ if (!istexConfig) {
 
     self.tpl.pagination = $(
       '<div class="istex-results-pagination">' +
-        '<button class="istex-results-pagination-prec">Page précédente</button>' +
+        '<button class="istex-results-pagination-prec" title="Page précédente">Page précédente</button>' +
         '<ul class="istex-results-pagination-plist">' +
           '<li class="istex-results-pagination-page-selected">1</li>' +
           '<li>2</li>' +
@@ -1028,7 +1032,7 @@ if (!istexConfig) {
           '<li>9</li>' +
           '<li>10</li>' +
         '</ul>' +
-        '<button class="istex-results-pagination-next">Page suivante</button>' +
+        '<button class="istex-results-pagination-next" title="Page suivante">Page suivante</button>' +
       '</div>'
     );
 
@@ -1121,6 +1125,13 @@ if (!istexConfig) {
    */
   Plugin.prototype.updateResultsInTheDom = function (results, istexSearch) {
     var self = this;
+
+    // not not fill anything in the results list
+    // if results are empty
+    if (!results) {
+      $(self.elt).empty();
+      return;
+    }
 
     // calculate the query time
     var queryElapsedTime = new Date() - istexSearch.queryStartTime;
@@ -1226,10 +1237,12 @@ if (!istexConfig) {
     items.fadeIn();
 
     // handle the pagination element
-    self.updatePaginationInTheDom(
-      self.selectedPage || 1,
-      Math.ceil(results.total / self.settings.pageSize)
-    );
+    if (results.total > 0) {
+      self.updatePaginationInTheDom(
+        self.selectedPage || 1,
+        Math.ceil(results.total / self.settings.pageSize)
+      );
+    }
   };
 
   /**
