@@ -1139,16 +1139,26 @@ if (!istexConfig) {
     // build the results statistics element
     var stats = self.tpl.stats.clone();
     if (results.total > 0) {
+      var querySpeedHtml, queryElapsedTime, queryElasticSearchTime = '';
       var queryTotalTime = (queryElapsedTime/1000).toFixed(2);
-      var queryElasticSearchTime = 'Réseau : ' 
-        + ((queryElapsedTime -
-            results.stats.elasticsearch.took -
-            results.stats['istex-data'].took -
-            results.stats['istex-rp'].took)/1000).toFixed(2) + ' sec'
-        + ', Moteur de recherche : ' + (results.stats.elasticsearch.took/1000).toFixed(2) + ' sec'
-        + ', Traitements de l\'API : '
-        + ((results.stats['istex-data'].took + results.stats['istex-rp'].took)/1000).toFixed(2) + ' sec';
-      var querySpeedHtml = '<span title="' + queryElasticSearchTime + '">(' + queryTotalTime + ' secondes)</span>';
+      if (results.stats) {
+          queryElasticSearchTime = 'Réseau : ' 
+            + ((queryElapsedTime -
+                results.stats.elasticsearch.took -
+                results.stats['istex-data'].took -
+                results.stats['istex-rp'].took)/1000).toFixed(2) + ' sec'
+            + ', Moteur de recherche : ' + (results.stats.elasticsearch.took/1000).toFixed(2) + ' sec'
+            + ', Traitements de l\'API : '
+            + ((results.stats['istex-data'].took + results.stats['istex-rp'].took)/1000).toFixed(2) + ' sec';
+        } else {
+          queryElasticSearchTime = 'Statistiques détaillées non disponibles';
+        }
+        querySpeedHtml = '<span title="'
+          + queryElasticSearchTime
+          + '">('
+          + queryTotalTime
+          + ' secondes)</span>';
+
       if (self.selectedPage > 1) {
         stats.html('Page ' + self.selectedPage + ' sur environ '
           + niceNumber(results.total)
@@ -1354,6 +1364,7 @@ if (!istexConfig) {
           '</p>'
         );
         $(self.elt).fadeIn();
+        throw err;
       }
     });
 
