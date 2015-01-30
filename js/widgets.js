@@ -502,6 +502,11 @@ var istexConfigDefault = {
   // le format qu'on souhaite voir s'ouvrir quand on clique sur le titre
   fullTextOnTitle: 'pdf',
   
+  // il est possible de cacher l'affichage de la vitesse de la requête
+  // ex: "Environ 8 933 993 résultats (0.24 secondes)"
+  //     si showQuerySpeed vaut false, "(0.24 secondes)" ne sera pas affiché
+  showQuerySpeed: true,
+
   // le nom de l'évènement émit au moment de l'authentification réussie
   connectedEventName: "istex-connected",
 
@@ -945,15 +950,21 @@ if (!istexConfig) {
     $(self.elt).find('.istex-search-loading').show();
     $(self.elt).find('.istex-search-error').hide();
 
+    // prepare the request parameters
+    var queryString = {
+      q: query,
+      output: '*',
+      size: self.settings.pageSize,
+      from: ((pageIdx-1) * self.settings.pageSize)
+    };
+    if (self.settings.showQuerySpeed) {
+      queryString.stats = 1;
+    }
+
     // send the request to the istex api
     self.istexApiRequester({
       url: self.settings.istexApi + '/document/',
-      data: {
-        q: query,
-        output: '*',
-        size: self.settings.pageSize,
-        from: ((pageIdx-1) * self.settings.pageSize)
-      },
+      data: queryString,
       success: function(items) {
         // hide the error box and the loading box
         $(self.elt).find('.istex-search-error').hide();
@@ -1139,7 +1150,9 @@ if (!istexConfig) {
     // build the results statistics element
     var stats = self.tpl.stats.clone();
     if (results.total > 0) {
-      var querySpeedHtml, queryElapsedTime, queryElasticSearchTime = '';
+      var querySpeedHtml         = '';
+      var queryTotalTime         = 0;
+      var queryElasticSearchTime = '';
       var queryTotalTime = (queryElapsedTime/1000).toFixed(2);
       if (results.stats) {
           queryElasticSearchTime = 'Réseau : ' 
@@ -1153,12 +1166,13 @@ if (!istexConfig) {
         } else {
           queryElasticSearchTime = 'Statistiques détaillées non disponibles';
         }
-        querySpeedHtml = '<span title="'
-          + queryElasticSearchTime
-          + '">('
-          + queryTotalTime
-          + ' secondes)</span>';
-
+        if (self.settings.showQuerySpeed) {
+          querySpeedHtml = '<span title="'
+            + queryElasticSearchTime
+            + '">('
+            + queryTotalTime
+            + ' secondes)</span>';
+        }
       if (self.selectedPage > 1) {
         stats.html('Page ' + self.selectedPage + ' sur environ '
           + niceNumber(results.total)
