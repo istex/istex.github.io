@@ -554,7 +554,7 @@ if (!istexConfig) {
     var self = this;
 
     // first of all, check which auth system is available
-    self.getAuthMode(function (err, needAuth, authMode) {
+    self.getAuthMode({}, function (err, needAuth, authMode) {
       if (needAuth == 'none') {
         self.setupGenericRequester(authMode);
         self.removeConnectBtn();
@@ -594,14 +594,21 @@ if (!istexConfig) {
    * - ajax
    * - jsonp
    */
-  Plugin.prototype.getAuthMode = function (cb) {
+  Plugin.prototype.getAuthMode = function (options, cb) {
     var self = this;
+    options = $.extend({ showWaitingIcon: true}, options);
 
-   // try to auth on the API with AJAX
+    // display a small text+icon to make the user wait
+    if (options && options.showWaitingIcon) {
+      self.showLoadingIcon();
+    }
+
+    // try to auth on the API with AJAX
     $.ajax({
       url: self.settings.istexApi + '/corpus/',
       success: function () {
         // if success it means auth is ok
+        self.hideLoadingIcon();
         return cb(null, 'none', 'ajax');
       },
       error: function (opt, err) {
@@ -614,14 +621,17 @@ if (!istexConfig) {
             url: self.settings.istexApi + '/corpus/',
             callbackParameter: "callback",
             success: function () {
+              self.hideLoadingIcon();
               cb(null, 'none', 'jsonp');
             },
             error: function () {
+              self.hideLoadingIcon();
               cb(null, 'redirect', 'jsonp');   
             }
           });
         } else {
           // other code are interpreted as 401
+          self.hideLoadingIcon();
           return cb(null, 'http', 'ajax');
         }
       }
@@ -643,7 +653,7 @@ if (!istexConfig) {
 
       // check again auth when the user come back on the origin page
       $(window).focus(function () {
-        self.getAuthMode(function (err, needAuth, authMode) {
+        self.getAuthMode({ showWaitingIcon: false }, function (err, needAuth, authMode) {
           if (needAuth == 'none') {
             cb(null);
           } else {
@@ -678,6 +688,31 @@ if (!istexConfig) {
   Plugin.prototype.removeConnectBtn = function (cb) {
     var self = this;
     $(self.elt).find('.istex-ezproxy-auth-btn').remove();
+  };
+
+  /**
+   * Show a loading visual information
+   * telling ISTEX widget is loading
+   */
+  Plugin.prototype.showLoadingIcon = function () {
+    var self = this;
+    if ($(self.elt).find('.istex-loading').length > 0) {
+      $(self.elt).find('.istex-loading').show();
+      return;
+    }
+    var loadingIcon = $(
+      '<div class="istex-loading">' +
+        '<div class="istex-loading-waiting"></div>' +
+        '<p>Chargement en cours</p>' +
+        '<div class="istex-loading-logo"></div>' +
+      '</div>'
+    ).show();
+    $(self.elt).append(loadingIcon);
+  };
+  Plugin.prototype.hideLoadingIcon = function (cb) {
+    var self = this;
+    $(self.elt).find('.istex-loading').hide();
+    $(self.elt).find('.istex-loading').remove();
   };
 
   /**
@@ -999,6 +1034,7 @@ if (!istexConfig) {
 
 })(jQuery, window, document);
 /* jshint -W117 */
+/* jshint -W083 */
 'use strict';
 
 /**
@@ -1030,7 +1066,9 @@ if (!istexConfig) {
 
     self.tpl.pagination = $(
       '<div class="istex-results-pagination">' +
-        '<button class="istex-results-pagination-prec" title="Page précédente">Page précédente</button>' +
+        '<button class="istex-results-pagination-prec" title="Page précédente">' +
+          'Page précédente' +
+        '</button>' +
         '<ul class="istex-results-pagination-plist">' +
           '<li class="istex-results-pagination-page-selected">1</li>' +
           '<li>2</li>' +
@@ -1043,7 +1081,9 @@ if (!istexConfig) {
           '<li>9</li>' +
           '<li>10</li>' +
         '</ul>' +
-        '<button class="istex-results-pagination-next" title="Page suivante">Page suivante</button>' +
+        '<button class="istex-results-pagination-next" title="Page suivante">' +
+          'Page suivante' +
+        '</button>' +
       '</div>'
     );
 
@@ -1153,16 +1193,18 @@ if (!istexConfig) {
       var querySpeedHtml         = '';
       var queryTotalTime         = 0;
       var queryElasticSearchTime = '';
-      var queryTotalTime = (queryElapsedTime/1000).toFixed(2);
+      queryTotalTime = (queryElapsedTime/1000).toFixed(2);
       if (results.stats) {
           queryElasticSearchTime = 'Réseau : ' 
             + ((queryElapsedTime -
                 results.stats.elasticsearch.took -
                 results.stats['istex-data'].took -
                 results.stats['istex-rp'].took)/1000).toFixed(2) + ' sec'
-            + ', Moteur de recherche : ' + (results.stats.elasticsearch.took/1000).toFixed(2) + ' sec'
+            + ', Moteur de recherche : '
+            + (results.stats.elasticsearch.took/1000).toFixed(2) + ' sec'
             + ', Traitements de l\'API : '
-            + ((results.stats['istex-data'].took + results.stats['istex-rp'].took)/1000).toFixed(2) + ' sec';
+            + ((results.stats['istex-data'].took + results.stats['istex-rp'].took)/1000).toFixed(2)
+            + ' sec';
         } else {
           queryElasticSearchTime = 'Statistiques détaillées non disponibles';
         }
