@@ -46,7 +46,7 @@
             // extraction de la version depuis le nom du répertoire
             // et ajout dynamique dans la page HTML
             var version = document.location.pathname.split('/');
-            version = version.length > 1 ? version[1] : 'version de développement';
+            version = version.length > 2 ? version[1] : 'version en cours de développement';
             version = version == 'dist' ? 'version de développement' : version;
             version = version == 'latest' ? 'dernière version stable (latest)' : version;
             $('title').text($('title').text() + ' [' + version + ']');
