@@ -56,7 +56,8 @@
 
         </div><!-- /.container -->
 
-        <footer class="blog-footer">
+        <footer style="margin-top: 20px;">
+            <p class="text-muted text-center">Place sticky footer content here.</p>
         </footer>
 
         <script type="text/javascript">
@@ -73,7 +74,7 @@
             version = version == 'dist' ? 'version de développement' : version;
             version = version == 'latest' ? 'dernière version stable (latest)' : version;
             //$('title').text($('title').text() + ' [' + version + ']');
-            $('footer').append('<p style="font-style: italic">[' + version + ']</p>');
+            $('footer p').text('[' + version + ']');
         </script>
 
     </body>
