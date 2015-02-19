@@ -17,6 +17,11 @@
             var istexConfig = {
               // paramètres du widget (cf section plus bas)
             };
+
+            // charge avec l'ezproxy de l'ul si on ajoute #ul dans l'URL
+            if (document.location.hash == '#ul') {
+                istexConfig.istexApi = 'https://api-istex-fr.bases-doc.univ-lorraine.fr';
+            }
         </script>
         <script type="text/javascript" src="js/widgets.min.js"></script>
         <link rel="stylesheet" href="themes/default/widgets.min.css" />
