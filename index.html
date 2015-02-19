@@ -4,10 +4,13 @@
         <meta charset="utf-8" />
         <title>Démonstration d'utilisation des widgets ISTEX</title>
 
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
+        <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 
         <!-- jQuery est une dépendances nécessaire -->
-        <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
-        <script>window.jQuery || document.write('<script src="/bower_components/jquery/dist/jquery.min.js">\x3C/script>')</script>
+        <script src="/bower_components/jquery/dist/jquery.min.js"></script>
 
         <!-- Chargement des widgets Istex -->
         <script type="text/javascript">
@@ -18,29 +21,49 @@
         <script type="text/javascript" src="js/widgets.min.js"></script>
         <link rel="stylesheet" href="themes/default/widgets.min.css" />
 
-        <style>
-        #mysite-istex-search, #mysite-istex-results, #mysite-istex-auth {
-            width: 600px;
-            font-family: sans-serif;
-        }
-        </style>
     </head>
     <body>
 
-        <h1>Exemple d'utilisation des widgets ISTEX</h1>
+        <div class="container">
 
-        <p>Cette page a vocation de montrer succintement comment les widgets peuvent
-           être chargés dans une page HTML en complément de la <a href="https://github.com/istex/istex-widgets/blob/master/README.md">documentation des widgets</a>.</p>
-        
-        <div id="mysite-istex-auth"></div>
-        <div id="mysite-istex-search"></div>
-        <div id="mysite-istex-results"></div>
+          <div class="blog-header">
+            <h1 class="blog-title">Démonstration d'utilisation des widgets Istex</h1>
+            <p class="lead blog-description">Intégration des widgets Istex dans un site réalisé avec <a href="http://getbootstrap.com/">Bootstrap</a>. La <a href="https://github.com/istex/istex-widgets/blob/master/README.md">documentation des widgets</a> vous donnera des informations détaillées sur comment intégrer les widgets dans votre site.</p>
+          </div>
+
+          <div class="row">
+
+            <div class="col-sm-8 blog-main">
+
+              <div class="blog-post">
+
+                <div id="mysite-istex-auth"></div>
+                <div id="mysite-istex-search"></div>
+                <div id="mysite-istex-results"></div>
+
+
+              </div><!-- /.blog-post -->
+
+            </div><!-- /.blog-main -->
+
+            <div class="col-sm-3 col-sm-offset-1 blog-sidebar">
+              <div class="sidebar-module sidebar-module-inset">
+                <div id="istex-widget-facets"></div>
+              </div>
+            </div><!-- /.blog-sidebar -->
+
+          </div><!-- /.row -->
+
+        </div><!-- /.container -->
+
+        <footer class="blog-footer">
+        </footer>
+
         <script type="text/javascript">
             $('#mysite-istex-auth').istexAuth();
             $('#mysite-istex-search').istexSearch();
             $('#mysite-istex-results').istexResults();
         </script>
-
 
         <script type="text/javascript">
             // extraction de la version depuis le nom du répertoire
@@ -49,8 +72,8 @@
             version = version.length > 2 ? version[1] : 'version en cours de développement';
             version = version == 'dist' ? 'version de développement' : version;
             version = version == 'latest' ? 'dernière version stable (latest)' : version;
-            $('title').text($('title').text() + ' [' + version + ']');
-            $('h1').after('<p style="font-style: italic">[' + version + ']</p>');
+            //$('title').text($('title').text() + ' [' + version + ']');
+            $('footer').append('<p style="font-style: italic">[' + version + ']</p>');
         </script>
 
     </body>

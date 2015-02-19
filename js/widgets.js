@@ -477,12 +477,15 @@ if (this['Meteor']) {
 var istexConfigDefault = {
   // l'adresse de l'API de l'Istex
   // pour une ezproxyfication, réglez ici l'adresse ezproxyfiée
-  // ex à l'UL: https://api-istex-fr.bases-doc.univ-lorraine.fr 
+  // ex à l'UL: https://api-istex-fr.bases-doc.univ-lorraine.fr
   istexApi: 'https://api.istex.fr',
-  
+
   // pour lancer une recherche au chargement de la page
   // indiquer les mots à rechercher (argument de ?q= au niveau de l'api istex)
   query: "",
+
+  // il est possible de ne charger que certaines facettes
+  facetsToLoad: [ 'corpus' ],
 
   // il est possible de cacher la zone de pagination avec ce paramètre
   showPagination: true,
@@ -501,22 +504,33 @@ var istexConfigDefault = {
 
   // le format qu'on souhaite voir s'ouvrir quand on clique sur le titre
   fullTextOnTitle: 'pdf',
-  
+
   // il est possible de cacher l'affichage de la vitesse de la requête
   // ex: "Environ 8 933 993 résultats (0.24 secondes)"
   //     si showQuerySpeed vaut false, "(0.24 secondes)" ne sera pas affiché
   showQuerySpeed: true,
 
-  // le nom de l'évènement émit au moment de l'authentification réussie
+  // les différents textes paramétrables
+  labels: {
+    facets: {
+      'title' : 'Affiner votre recherche',
+      'corpus' : 'Corpus',
+    }
+  },
+
+  // le nom de l'événement émit au moment de l'authentification réussie
   connectedEventName: "istex-connected",
 
-  // le nom de l'évènement émit au moment d'une recherche    
+  // le nom de l'événement émit au moment où une nouvelle recherche est envoyée
+  newSearchEventName: "istex-search",
+
+  // le nom de l'événement émit au moment d'une recherche
   resultsEventName: "istex-results",
 
-  // le nom de l'évènement émit au moment d'un changement de page
+  // le nom de l'événement émit au moment d'un changement de page
   gotoPageEventName: "istex-gotopage",
 
-  // le nom de l'évènement émit a chaque fois qu'une recherche est envoyée
+  // le nom de l'événement émit a chaque fois qu'une recherche est envoyée
   // et qui donnera probablement (sauf erreur) lieux à un event "istex-results"
   waitingForResultsEventName: "istex-waiting-for-results"
 };
@@ -896,7 +910,7 @@ if (!istexConfig) {
 
     // listen istex-gotopage event
     $(document).bind(self.settings.gotoPageEventName, function (event, pageIdx) {
-      self.execQuery(null, pageIdx);
+      self.execQuery({}, pageIdx);
     });
 
   };
@@ -931,12 +945,15 @@ if (!istexConfig) {
     $(self.elt).find('.istex-search-input').val(self.settings.query);
 
     // connect the submit action
-    $(self.elt).find('.istex-search-form').submit(function () {      
+    $(self.elt).find('.istex-search-form').submit(function () {
       var query = $(self.elt).find('input.istex-search-input').val().trim();
       query = query ? query : '*';
-      
-      self.execQuery(query);
-      
+
+      // send the event telling a new search is sent
+      $.event.trigger(self.settings.newSearchEventName, [ self ]);
+
+      self.execQuery({ q: query });
+
       return false;
     }); // end of ('.istex-search-form').submit(
 
@@ -962,17 +979,18 @@ if (!istexConfig) {
   /**
    * Execute a query
    */
-  Plugin.prototype.execQuery = function (query, pageIdx) {
+  Plugin.prototype.execQuery = function (queryOptions, pageIdx) {
     var self = this;
 
-    // if no page id selected the setup one
-    pageIdx = pageIdx || 1;
+    // default vaules
+    pageIdx      = pageIdx || 1;
+    queryOptions = queryOptions || {};
 
     // if no query selected try to take the latest one
-    if (query) {
-      self.query = query;
+    if (queryOptions.q) {
+      self.query = queryOptions.q;
     } else {
-      query = self.query;
+      queryOptions.q = self.query;
     }
 
     // set the timer to know when the query has been done (ex: to have the query time)
@@ -987,13 +1005,17 @@ if (!istexConfig) {
 
     // prepare the request parameters
     var queryString = {
-      q: query,
+      q: queryOptions.q,
       output: '*',
       size: self.settings.pageSize,
       from: ((pageIdx-1) * self.settings.pageSize)
     };
+    queryString = $.extend(queryOptions, queryString);
     if (self.settings.showQuerySpeed) {
       queryString.stats = 1;
+    }
+    if (self.settings.facetsToLoad && self.settings.facetsToLoad.length > 0) {
+      queryString.facet = self.settings.facetsToLoad.join(',');
     }
 
     // send the request to the istex api
@@ -1456,6 +1478,181 @@ if (!istexConfig) {
   // preventing against multiple instantiations
   $.fn[ pluginName ] = function (options) {
     this.each(function() {
+      if (!$.data(this, "plugin_" + pluginName)) {
+        $.data(this, "plugin_" + pluginName, new Plugin(this, options));
+      }
+    });
+    return this;
+  };
+
+})(jQuery, window, document);
+/* jshint -W117 */
+'use strict';
+
+/**
+ * Widget istexFacets
+ */
+;(function ($, window, document, undefined) {
+
+  var pluginName  = "istexFacets";
+  var defaults    = istexConfigDefault;
+
+  // The actual plugin constructor
+  function Plugin(element, options) {
+    this.elt = element;
+    this.settings = $.extend({}, defaults, istexConfig, options);
+    this._defaults = defaults;
+    this._name = pluginName;
+
+    // no corpus facet selected by default
+    this.selectedCorpus = [];
+
+    this.init();
+  }
+
+  /**
+   * Wait for any results event
+   * then load the facets HTML in the DOM
+   */
+  Plugin.prototype.init = function () {
+    var self = this;
+
+    // bind received results (do not show facets if no results are returned)
+    $(document).bind(self.settings.resultsEventName, function (event, results, istexSearch) {
+      // try {
+        self.updateFacetsInTheDom(results, istexSearch);
+      // } catch (err) {
+      //   self.displayErrorInDom(
+      //     'Erreur car le format de l\'API Istex a probablement changé. <br/>' +
+      //     'Merci de le signaler par mail à istex@inist.fr (copie d\'écran appréciée)',
+      //     err
+      //   );
+      // }
+    });
+
+    // bind waiting for result event
+    $(document).bind(self.settings.waitingForResultsEventName, function (event) {
+      // fade effect on the old result page
+      // to tell the user a query is in process
+      $(self.elt).css({ opacity: 0.5 });
+    });
+
+    // bind new search event
+    $(document).bind(self.settings.newSearchEventName, function (event) {
+      // reset the selected corpus facet
+      self.selectedCorpus = [];
+    });
+  };
+
+  /**
+   * Update the DOM with the received facets values
+   */
+  Plugin.prototype.updateFacetsInTheDom = function (results, istexSearch) {
+    var self = this;
+
+    // not not fill anything in the facets list
+    // if results are empty
+    if (!results) {
+      $(self.elt).empty();
+      return;
+    }
+
+    var facets = $(
+      '<div class="istex-facets">' +
+        '<h3 class="istex-facets-title">' + self.settings.labels.facets.title + '</h3>' +
+      '</div>'
+    ).hide();
+
+    // build and add the corpus facet DOM element
+    var facetCorpus = self.getCorpusFacetDom(results, istexSearch);
+    if (facetCorpus) {
+      facets.append(facetCorpus);
+    }
+
+    // cleanup the result list in the DOM
+    $(self.elt).empty();
+    $(self.elt).css({ opacity: 1.0 });
+
+    // insert the facets list into the DOM
+    $(self.elt).append(facets);
+    facets.fadeIn();
+  };
+
+  /**
+   * Returns the corpus facet DOM element
+   */
+  Plugin.prototype.getCorpusFacetDom = function (results, istexSearch) {
+    var self = this;
+
+    // check if we can return a corpus facet
+    if (!results ||
+        !results.aggregations ||
+        !results.aggregations.corpus ||
+        !results.aggregations.corpus.buckets) {
+      return null;
+    }
+
+    var facetCorpus = $(
+      /*jshint ignore:start*/
+      '<div class="istex-facet">' +
+        '<h4 class="istex-facet-name">' + self.settings.labels.facets.corpus + '</h4>' +
+        '<ul class="istex-facet-corpus"></ul>' +
+      '</div>'
+      /*jshint ignore:end*/
+    );
+
+    // get corpus facets from the results
+    results.aggregations.corpus.buckets.forEach(function (corpus) {
+      var corpusCheckbox = $(
+        '<li>' +
+          '<label>' +
+            '<input type="checkbox" value="' + corpus.key + '" />' +
+            corpus.key +
+            '<span class="istex-facet-corpus-badge">' + corpus.doc_count + '</span>' +
+          '</label>' +
+        '</li>'
+      );
+      if (self.selectedCorpus.indexOf(corpus.key) !== -1) {
+        corpusCheckbox.find('input').attr('checked', 'checked');
+      } else {
+        corpusCheckbox.find('input').removeAttr('checked');
+      }
+      facetCorpus.find('ul.istex-facet-corpus').append(corpusCheckbox);
+    });
+
+    // react when a checkbox is clicked
+    facetCorpus.find('.istex-facet-corpus input').click(function () {
+      var clickedCorpus = $(this).val();
+      self.toggleCorpusFacet(clickedCorpus);
+
+      // execute a new query with the selected corpus as an argument
+      istexSearch.execQuery({
+        corpus: self.selectedCorpus.join(',')
+      });
+    });
+
+    return facetCorpus;
+  };
+
+  /**
+   * Activate or unactivate a corpus facet
+   */
+  Plugin.prototype.toggleCorpusFacet = function (corpus) {
+    var self = this;
+
+    // remove or add a corpus from the list
+    var corpusIdx = self.selectedCorpus.indexOf(corpus);
+    if (corpusIdx !== -1) {
+      self.selectedCorpus.splice(corpusIdx, 1);
+    } else {
+      self.selectedCorpus.push(corpus);
+    }
+  };
+
+  // A really lightweight plugin wrapper around the constructor,
+  // preventing against multiple instantiations
+  $.fn[ pluginName ] = function (options) {
+    this.each(function () {
       if (!$.data(this, "plugin_" + pluginName)) {
         $.data(this, "plugin_" + pluginName, new Plugin(this, options));
       }
