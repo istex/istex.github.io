@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Démonstration d'utilisation des widgets ISTEX</title>
+
+        <!-- jQuery est une dépendances nécessaire -->
+        <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
+        <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+        <!-- Chargement des widgets Istex -->
+        <script type="text/javascript">
+            var istexConfig = {
+              // paramètres du widget (cf section plus bas)
+            };
+
+            // charge avec l'ezproxy de l'ul si on ajoute #ul dans l'URL
+            if (document.location.hash == '#ul') {
+                istexConfig.istexApi = 'https://api-istex-fr.bases-doc.univ-lorraine.fr';
+            }
+            // charge avec l'ezproxy bibliovie de l'inist si on ajoute #inist dans l'URL
+            if (document.location.hash == '#inist') {
+                istexConfig.istexApi = 'https://api-istex-fr.gate1.inist.fr';
+            }
+        </script>
+        <script type="text/javascript" src="js/widgets.min.js"></script>
+        <link rel="stylesheet" href="themes/default/widgets.min.css" />
+
+    </head>
+    <body>
+
+        <div class="container">
+
+          <div class="blog-header">
+            <h1 class="blog-title">Démonstration d'utilisation des widgets Istex</h1>
+            <p class="lead blog-description">Cette page Web est réalisée à l'aide de <a href="http://getbootstrap.com/">Bootstrap</a> et montre comment les <a href="https://github.com/istex/istex-widgets">widgets Istex</a> peuvent être intégrés à un site Web tier.
+            Le contrôle d'accès de l'Istex fonctionne par <a href="#" class="reload">login/mot de passe</a> mais peut également fonctionner avec, par exemple, l'<a href="#ul" class="reload">ezproxy de l'Université de Lorraine</a> ou bien l'<a href="#inist" class="reload">ezproxy bibliovie du CNRS</a>.</p>
+          </div>
+          <script>
+            // recharge la page avec le fragment dans l'URL permettant
+            // de basculer sur un mode d'authentification ou un autre
+            $('a.reload').click(function () {
+              console.log($(this).attr('href'));
+              document.location =
+                document.location.origin +
+                document.location.pathname +
+                '?' + Math.round(Math.random()*1000) + $(this).attr('href');
+            });
+          </script>
+
+          <div class="row">
+            <div class="col-sm-11 blog-main">
+                <div id="mysite-istex-auth"></div>
+                <div id="mysite-istex-search"></div>
+            </div>
+          </div>
+
+          <div class="row">
+
+            <div class="col-sm-8 blog-main">
+
+              <div class="blog-post">
+
+
+                <div id="mysite-istex-results"></div>
+
+
+              </div><!-- /.blog-post -->
+
+            </div><!-- /.blog-main -->
+
+            <div class="col-sm-3 blog-sidebar">
+              <div class="sidebar-module sidebar-module-inset">
+                <br/>
+                <div id="mysite-istex-facets"></div>
+              </div>
+            </div><!-- /.blog-sidebar -->
+
+          </div><!-- /.row -->
+
+        </div><!-- /.container -->
+
+        <footer style="margin-top: 20px;">
+            <p class="text-muted text-center">Place sticky footer content here.</p>
+        </footer>
+
+        <script type="text/javascript">
+            $('#mysite-istex-auth').istexAuth();
+            $('#mysite-istex-search').istexSearch();
+            $('#mysite-istex-results').istexResults();
+            $('#mysite-istex-facets').istexFacets();
+        </script>
+
+        <script type="text/javascript">
+            // extraction de la version depuis le nom du répertoire
+            // et ajout dynamique dans la page HTML
+            var version = document.location.pathname.split('/');
+            version = version.length > 2 ? version[1] : 'version en cours de développement';
+            version = version == 'dist' ? 'version de développement' : version;
+            version = version == 'latest' ? 'dernière version stable (latest)' : version;
+            //$('title').text($('title').text() + ' [' + version + ']');
+            $('footer p').text('[' + version + ']');
+        </script>
+
+    </body>
+</html>

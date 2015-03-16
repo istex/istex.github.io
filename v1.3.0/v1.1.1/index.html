@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Démonstration d'utilisation des widgets ISTEX</title>
+
+        <!-- jQuery est une dépendances nécessaire -->
+        <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+        <script>window.jQuery || document.write('<script src="/bower_components/jquery/dist/jquery.min.js">\x3C/script>')</script>
+
+        <!-- Chargement des widgets Istex -->
+        <script type="text/javascript">
+            var istexConfig = {
+              // paramètres du widget (cf section plus bas)
+            };
+        </script>
+        <script type="text/javascript" src="js/widgets.min.js"></script>
+        <link rel="stylesheet" href="themes/default/widgets.min.css" />
+
+        <style>
+        #mysite-istex-search, #mysite-istex-results, #mysite-istex-auth {
+            width: 600px;
+            font-family: sans-serif;
+        }
+        </style>
+    </head>
+    <body>
+
+        <h1>Exemple d'utilisation des widgets ISTEX</h1>
+
+        <p>Cette page a vocation de montrer succintement comment les widgets peuvent
+           être chargés dans une page HTML en complément de la <a href="https://github.com/istex/istex-widgets/blob/master/README.md">documentation des widgets</a>.</p>
+        
+        <div id="mysite-istex-auth"></div>
+        <div id="mysite-istex-search"></div>
+        <div id="mysite-istex-results"></div>
+        <script type="text/javascript">
+            $('#mysite-istex-auth').istexAuth();
+            $('#mysite-istex-search').istexSearch();
+            $('#mysite-istex-results').istexResults();
+        </script>
+
+    </body>
+</html>
