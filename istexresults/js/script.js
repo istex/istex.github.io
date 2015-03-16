@@ -160,15 +160,14 @@
       var queryElasticSearchTime = '';
       queryTotalTime = (queryElapsedTime/1000).toFixed(2);
       if (results.stats) {
-          queryElasticSearchTime = 'Réseau : ' 
+          queryElasticSearchTime = 'Réseau : '
             + ((queryElapsedTime -
                 results.stats.elasticsearch.took -
-                results.stats['istex-data'].took -
                 results.stats['istex-rp'].took)/1000).toFixed(2) + ' sec'
             + ', Moteur de recherche : '
             + (results.stats.elasticsearch.took/1000).toFixed(2) + ' sec'
             + ', Traitements de l\'API : '
-            + ((results.stats['istex-data'].took + results.stats['istex-rp'].took)/1000).toFixed(2)
+            + (results.stats['istex-rp'].took/1000).toFixed(2)
             + ' sec';
         } else {
           queryElasticSearchTime = 'Statistiques détaillées non disponibles';
@@ -211,14 +210,14 @@
       // fulltext links
       $.each(item.fulltext, function (idx, ftItem) {
         var dlItem;
-        if (self.tpl.dlItem[ftItem.type]) {
-          dlItem = self.tpl.dlItem[ftItem.type].clone();
+        if (self.tpl.dlItem[ftItem.extension]) {
+          dlItem = self.tpl.dlItem[ftItem.extension].clone();
         } else {
           dlItem = self.tpl.dlItem['default'].clone();
         }
         dlItem.find('a').attr('href', self.fixIstexAPILink(ftItem.uri));
         // sepcial case for PDF (link to the title element)
-        if (ftItem.type == self.settings.fullTextOnTitle) {
+        if (ftItem.extension == self.settings.fullTextOnTitle) {
           itemElt.find('.istex-results-item-title').attr('href', self.fixIstexAPILink(ftItem.uri));
         }
         itemElt.find('.istex-results-item-download').append(dlItem);
@@ -226,8 +225,8 @@
       // metadata links
       $.each(item.metadata, function (idx, ftItem) {
         var dlItem;
-        if (self.tpl.dlItem[ftItem.type]) {
-          dlItem = self.tpl.dlItem[ftItem.type].clone();
+        if (self.tpl.dlItem[ftItem.extension]) {
+          dlItem = self.tpl.dlItem[ftItem.extension].clone();
         } else {
           dlItem = self.tpl.dlItem['default'].clone();
         }
