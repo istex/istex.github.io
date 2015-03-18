@@ -30,6 +30,15 @@
         <script type="text/javascript" src="js/widgets.min.js"></script>
         <link rel="stylesheet" href="themes/default/widgets.min.css" />
 
+		<style type="text/css"> 
+			footer ul{padding:0}
+			footer ul{padding-top:5px;padding-bottom:5px;text-align: center;}
+			footer li{display:inline-block;list-style-type: none; padding:0 3em;}
+			ul.partners{height:130px;line-height:130px}
+			ul.partners li{display:inline-block;list-style-type: none; padding:0 1.5em;}
+			ul.partners li a{display:block}
+			ul.partners li img{vertical-align:middle}
+		</style>
     </head>
     <body>
 
@@ -85,7 +94,16 @@
         </div><!-- /.container -->
 
         <footer style="margin-top: 20px;">
-            <p class="text-muted text-center">Place sticky footer content here.</p>
+            <p id="version" class="text-muted text-center">Place sticky footer content here.</p>
+			<ul class="partners">
+				<li><a href="http://www.enseignementsup-recherche.gouv.fr/" target="_blank"><img src="http://www.istex.fr/wp-content/themes/istex/images/mesr.png" alt="ministère de l'éducation et de la recherche"></a></li>           	
+				<li><a href="http://www.agence-nationale-recherche.fr/" target="_blank"><img src="http://www.istex.fr/wp-content/themes/istex/images/Label-IA-mini.jpg" alt="Financement : ANR-10-IDEX-0004-02"></a></li>          	
+				<li><a href="http://www.cnrs.fr/" target="_blank"><img src="http://www.istex.fr/wp-content/themes/istex/images/cnrs.png" alt="CNRS"></a></li>          	
+				<li><a href="http://www.univ-lorraine.fr/" target="_blank"><img src="http://www.univ-lorraine.fr/sites/www.univ-lorraine.fr/files/logo-universite-de-lorraine.png" alt="Université de Lorraine" width="119px"></a></li>        
+				<li><a href="http://www.abes.fr/" target="_blank"><img src="http://www.istex.fr/wp-content/themes/istex/images/abes.png" alt="abes, agence bibliographique de l'enseignement supérieur"></a></li>          	
+				<li><a href="http://www.couperin.org/" target="_blank"><img src="http://www.istex.fr/wp-content/themes/istex/images/couperin.png" alt="consortium unifié des établissements universitaires et de recherche pour l'accès aux publications numériques"></a></li>
+				<li><a href="http://www.cpu.fr/" target="_blank"><img src="http://www.istex.fr/wp-content/themes/istex/images/cpu.png" alt="Conférence des présidents d'université"></a></li>        
+			</ul>
         </footer>
 
         <script type="text/javascript">
@@ -103,7 +121,7 @@
             version = version == 'dist' ? 'version de développement' : version;
             version = version == 'latest' ? 'dernière version stable (latest)' : version;
             //$('title').text($('title').text() + ' [' + version + ']');
-            $('footer p').text('[' + version + ']');
+            $('#version').text('[' + version + ']');
         </script>
 
     </body>
