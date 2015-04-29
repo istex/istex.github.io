@@ -1220,11 +1220,11 @@ if (!istexConfig) {
           queryElasticSearchTime = 'Réseau : '
             + ((queryElapsedTime -
                 results.stats.elasticsearch.took -
-                results.stats['istex-rp'].took)/1000).toFixed(2) + ' sec'
+                results.stats['istex-api'].took)/1000).toFixed(2) + ' sec'
             + ', Moteur de recherche : '
             + (results.stats.elasticsearch.took/1000).toFixed(2) + ' sec'
             + ', Traitements de l\'API : '
-            + (results.stats['istex-rp'].took/1000).toFixed(2)
+            + (results.stats['istex-api'].took/1000).toFixed(2)
             + ' sec';
         } else {
           queryElasticSearchTime = 'Statistiques détaillées non disponibles';
@@ -1441,7 +1441,6 @@ if (!istexConfig) {
           '</p>'
         );
         $(self.elt).fadeIn();
-        throw err;
       }
     });
 
