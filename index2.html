@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head lang="en">
     <meta charset="UTF-8">
@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="/slider/rzslider.css">
-    <link rel="stylesheet" href="/style.min.css">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="slider/rzslider.css">
+    <link rel="stylesheet" href="style.min.css">
 
 
 </head>
@@ -18,9 +18,9 @@
 <div class="container" >
 
     <div class="blog-header">
-        <h1 class="blog-title">DÃ©monstration d'utilisation des widgets Istex</h1>
-        <p class="lead blog-description">Cette page Web, rÃ©alisÃ©e Ã  l'aide de <a href="http://getbootstrap.com/">Bootstrap</a> et
-            <a href="https://angularjs.org/">AngularJS</a> montre comment les <a href="https://github.com/istex/istex-widgets-angular">widgets Istex</a> peuvent Ãªtre intÃ©grÃ©s Ã  un site Web tier.</p>
+        <h1 class="blog-title">Démonstration d'utilisation des widgets Istex</h1>
+        <p class="lead blog-description">Cette page Web, réalisée à l'aide de <a href="http://getbootstrap.com/">Bootstrap</a> et
+            <a href="https://angularjs.org/">AngularJS</a> montre comment les <a href="https://github.com/istex/istex-widgets-angular">widgets Istex</a> peuvent être intégrés à un site Web tier.</p>
     </div>
 
     <div class="row">
@@ -58,26 +58,26 @@
         abstractLength: 160,
         labels: {
             search: {
-                'advancedTitle':"Cliquer ici pour la recherche avancÃ©e",
-                'placeholder':"Votre requÃªte ici ...",
+                'advancedTitle':"Cliquer ici pour la recherche avancée",
+                'placeholder':"Votre requête ici ...",
                 'author.name':"Auteur",
                 'host.editor.name':"Editeur",
                 'genre':"Genre de document",
-                'host.genre':"Genre de sÃ©rie",
+                'host.genre':"Genre de série",
                 'subject.value':"Sujet du document",
-                'host.subject.value':"Sujet de la sÃ©rie",
+                'host.subject.value':"Sujet de la série",
                 'language':"Langue"
             },
             results: {
-                'abstract':"Pas de rÃ©sumÃ©",
+                'abstract':"Pas de résumé",
                 'fulltext':"Texte complet",
-                'metadata':"MÃ©tadonnÃ©es"
+                'metadata':"Métadonnées"
             },
             facets: {
                 'title' : 'Affiner votre recherche',
                 'corpus' : 'Corpus',
                 'pubdate' : 'Date de publication',
-                'copyrightdate' : 'DÃ©but du copyright'
+                'copyrightdate' : 'Début du copyright'
             }
         },
         facetsToLoad: [ 'corpus','pubdate','copyrightdate'],
@@ -91,13 +91,39 @@
             'language':""
         }
     };
+/*
+    [
+        //'http://test-widget-istex.infra.univ-lorraine.fr/style.min.css',
+        //'http://test-widget-istex.infra.univ-lorraine.fr/slider/rzslider.css'
+        'slider/rzslider.css',
+        'style.min.css'
+    ].forEach(function(href) {
+                var link = document.createElement('link');
+                link.href = href;
+                link.rel = "stylesheet";
+                document.head.appendChild(link);
+    });
 
+    [
+        //'http://test-widget-istex.infra.univ-lorraine.fr/bower_components/angularjs/angular.min.js',
+        //'http://test-widget-istex.infra.univ-lorraine.fr/slider/rzslider.js',
+        //'http://test-widget-istex.infra.univ-lorraine.fr/app.min.js'
+		'bower_components/angular/angular.min.js',
+        'slider/rzslider.js',
+        'app.min.js'
+    ].forEach(function(src) {
+                var script = document.createElement('script');
+                script.src = src;
+                script.async = false;
+                document.head.appendChild(script);
+    });
+*/
 </script>
 
 <!-- Dependencies -->
-<script src="/bower_components/angular/angular.min.js"></script>
-<script src="/slider/rzslider.js"></script>
-<script src="/app.min.js"></script>
+<script src="bower_components/angular/angular.min.js"></script>
+<script src="slider/rzslider.js"></script>
+<script src="app.min.js"></script>
 
 </body>
 </html>
