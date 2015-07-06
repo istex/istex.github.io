@@ -485,7 +485,7 @@ var istexConfigDefault = {
   query: "",
 
   // il est possible de ne charger que certaines facettes
-  facetsToLoad: [ 'corpus' ],
+  facetsToLoad: [ 'corpusName' ],
 
   // il est possible de cacher la zone de pagination avec ce paramètre
   showPagination: true,
@@ -1585,8 +1585,8 @@ if (!istexConfig) {
     // check if we can return a corpus facet
     if (!results ||
         !results.aggregations ||
-        !results.aggregations.corpus ||
-        !results.aggregations.corpus.buckets) {
+        !results.aggregations.corpusName ||
+        !results.aggregations.corpusName.buckets) {
       return null;
     }
 
@@ -1600,13 +1600,13 @@ if (!istexConfig) {
     );
 
     // get corpus facets from the results
-    results.aggregations.corpus.buckets.forEach(function (corpus) {
+    results.aggregations.corpusName.buckets.forEach(function (corpus) {
       var corpusCheckbox = $(
         '<li>' +
           '<label>' +
             '<input type="checkbox" value="' + corpus.key + '" />' +
             corpus.key +
-            '<span class="istex-facet-corpus-badge">' + corpus.doc_count + '</span>' +
+            '<span class="istex-facet-corpus-badge">' + corpus.docCount + '</span>' +
           '</label>' +
         '</li>'
       );
