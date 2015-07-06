@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Istex - Widgets</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="slider/rzslider.css">
+    <link rel="stylesheet" href="styleAngular/style.min.css">
+
+
+	<style type="text/css"> 
+		footer ul{padding:0}
+		footer ul{padding-top:5px;padding-bottom:5px;text-align: center;}
+		footer li{display:inline-block;list-style-type: none; padding:0 3em;}
+		ul.partners{height:130px;line-height:130px}
+		ul.partners li{display:inline-block;list-style-type: none; padding:0 1.5em;}
+		ul.partners li a{display:block}
+		ul.partners li img{vertical-align:middle}
+	</style>
+</head>
+<body>
+
+<div class="container" >
+
+    <div class="blog-header">
+        <h1 class="blog-title">Démonstration d'utilisation des widgets Istex</h1>
+        <p class="lead blog-description">Cette page Web, réalisée à l'aide de <a href="http://getbootstrap.com/">Bootstrap</a> et
+            <a href="https://angularjs.org/">AngularJS</a> montre comment les <a href="https://github.com/istex/istex-widgets-angular">widgets Istex</a> peuvent être intégrés à un site Web tier.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-11 blog-main">
+            <istex-auth></istex-auth>
+            <istex-search></istex-search>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-sm-8 blog-main">
+
+            <div class="blog-post">
+
+                <istex-results></istex-results>
+
+            </div><!-- /.blog-post -->
+
+        </div><!-- /.blog-main -->
+
+        <div class="col-sm-3 blog-sidebar">
+            <div class="sidebar-module sidebar-module-inset">
+                <br/>
+                <istex-facets></istex-facets>
+            </div>
+        </div><!-- /.blog-sidebar -->
+
+    </div><!-- /.row -->
+</div><!-- /.container -->
+<footer style="margin-top: 20px;">
+    <p id="version" class="text-center">Dernière version en date.</p>
+	<ul class="partners">
+		<li><a href="http://www.enseignementsup-recherche.gouv.fr/" target="_blank"><img src="http://www.istex.fr/wp-content/themes/istex/images/mesr.png" alt="ministère de l'éducation et de la recherche"></a></li>           	
+		<li><a href="http://www.agence-nationale-recherche.fr/" target="_blank"><img src="http://www.istex.fr/wp-content/themes/istex/images/Label-IA-mini.jpg" alt="Financement : ANR-10-IDEX-0004-02"></a></li>          	
+		<li><a href="http://www.cnrs.fr/" target="_blank"><img src="http://www.istex.fr/wp-content/themes/istex/images/cnrs.png" alt="CNRS"></a></li>          	
+		<li><a href="http://www.univ-lorraine.fr/" target="_blank"><img src="http://www.univ-lorraine.fr/sites/www.univ-lorraine.fr/files/logo-universite-de-lorraine.png" alt="Université de Lorraine" width="119px"></a></li>        
+		<li><a href="http://www.abes.fr/" target="_blank"><img src="http://www.istex.fr/wp-content/themes/istex/images/abes.png" alt="abes, agence bibliographique de l'enseignement supérieur"></a></li>          	
+		<li><a href="http://www.couperin.org/" target="_blank"><img src="http://www.istex.fr/wp-content/themes/istex/images/couperin.png" alt="consortium unifié des établissements universitaires et de recherche pour l'accès aux publications numériques"></a></li>
+		<li><a href="http://www.cpu.fr/" target="_blank"><img src="http://www.istex.fr/wp-content/themes/istex/images/cpu.png" alt="Conférence des présidents d'université"></a></li>        
+	</ul>
+</footer>
+<script>
+    var istexConfig = {
+        titleLength: 80,
+        abstractLength: 160,
+        labels: {
+            search: {
+                'advancedTitle':"Cliquer ici pour la recherche avancée",
+                'placeholder':"Votre requête ici ...",
+                'author.name':"Auteur",
+                'host.editor.name':"Editeur",
+                'genre':"Genre de document",
+                'host.genre':"Genre de série",
+                'subject.value':"Sujet du document",
+                'host.subject.value':"Sujet de la série",
+                'language':"Langue"
+            },
+            results: {
+                'abstract':"Pas de résumé",
+                'fulltext':"Texte complet",
+                'metadata':"Métadonnées"
+            },
+            facets: {
+                'title' : 'Affiner votre recherche',
+                'corpusName' : 'Editeur',
+                'publicationDate' : 'Date de publication',
+                'copyrightDate' : 'Début du copyright'
+            }
+        },
+        advancedToLoad: {
+            'author.name':"",
+            'host.editor.name':"",
+            'genre':"",
+            'host.genre':"",
+            'subject.value':"",
+            'host.subject.value':"",
+            'language':""
+        }
+    };
+/*
+    [
+        //'http://test-widget-istex.infra.univ-lorraine.fr/style.min.css',
+        //'http://test-widget-istex.infra.univ-lorraine.fr/slider/rzslider.css'
+        'slider/rzslider.css',
+        'style.min.css'
+    ].forEach(function(href) {
+                var link = document.createElement('link');
+                link.href = href;
+                link.rel = "stylesheet";
+                document.head.appendChild(link);
+    });
+
+    [
+        //'http://test-widget-istex.infra.univ-lorraine.fr/bower_components/angularjs/angular.min.js',
+        //'http://test-widget-istex.infra.univ-lorraine.fr/slider/rzslider.js',
+        //'http://test-widget-istex.infra.univ-lorraine.fr/app.min.js'
+		'bower_components/angular/angular.min.js',
+        'slider/rzslider.js',
+        'app.min.js'
+    ].forEach(function(src) {
+                var script = document.createElement('script');
+                script.src = src;
+                script.async = false;
+                document.head.appendChild(script);
+    });
+*/
+</script>
+
+<!-- Dependencies -->
+<script src="bower_components/angular/angular.min.js"></script>
+<script src="slider/rzslider.js"></script>
+<script src="app.min.js"></script>
+
+</body>
+</html>
