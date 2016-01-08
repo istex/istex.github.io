@@ -30,7 +30,7 @@ infoArrow.addEventListener("click",function(){
 		infoArrow.style.transform="";
 	}
 });
-var submitButton = document.getElementsByClassName("istex-search-submit")[0];
+
 var trigClickInfo = function(){
   var event;
   if (document.createEvent) {
@@ -51,4 +51,12 @@ var trigClickInfo = function(){
     arrow.dispatchEvent(event);
   }
 };
-submitButton.onclick = trigClickInfo;
+var submitButton = document.getElementsByClassName("istex-search-submit")[0];
+if (submitButton === undefined){
+  setTimeout(function(){
+    submitButton = document.getElementsByClassName("istex-search-submit")[0];
+	submitButton.onclick = trigClickInfo;
+  },1000);
+}else{
+  submitButton.onclick = trigClickInfo;
+}
