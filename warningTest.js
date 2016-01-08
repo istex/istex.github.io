@@ -32,11 +32,19 @@ infoArrow.addEventListener("click",function(){
 });
 var submitButton = document.getElementsByClassName("istex-search-submit")[0];
 var trigClickInfo = function(){
-  var event = new MouseEvent('click', {
-    'view': window,
-    'bubbles': true,
-    'cancelable': true
-  });
+  var event;
+  if (document.createEvent) {
+    event = document.createEvent("HTMLEvents");
+    event.initEvent("click", true, true);
+	event.eventName = "click";
+  } else {
+    event = new MouseEvent('click', {
+	  'view': window,
+	  'bubbles': true,
+	  'cancelable': true
+	});
+  }
+  
   var p = document.getElementById("widget-istex-info");
   if (p.style.height == "100%") {
     var arrow = document.getElementById("widget-istex-info-arrow"); 
