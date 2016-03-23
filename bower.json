@@ -1,20 +1,21 @@
 {
-  "name": "widget.istex.fr",
-  "version": "1.0.0",
-  "homepage": "https://github.com/istex/istex.github.io",
-  "authors": [],
-  "description": "Widgets compilés de l'Istex",
+  "name": "istex-widgets-angular",
+  "version": "0.1.7",
+  "homepage": "https://github.com/istex/istex-widgets-angular",
+  "authors": [
+    "Thomas Frantz"
+  ],
+  "description": "Widgets istex with AngularJS",
   "license": "CeCILL",
   "ignore": [
     "**/.*",
     "node_modules",
     "bower_components",
-    "test",
-    "tests"
+    ".idea"
   ],
+  "devDependencies": {},
   "dependencies": {
-    "jquery": "1.11",
-    "js-base64": "~2.1.7",
-    "bootstrap": "~3.3.2"
+    "bootstrap": "~3.3.2",
+    "angular": "~1.5.2"
   }
 }
